@@ -1,0 +1,59 @@
+# Service A Configuration for EKS
+nameOverride: "service-a"
+replicaCount: 2
+
+# Service A specific message
+args:
+  - "-text=Hello from Service A on EKS!"
+  - "-listen=:8080"
+
+# EKS LoadBalancer service for external access
+service:
+  type: LoadBalancer
+  port: 8080
+  targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+
+# Enable autoscaling for EKS (with metrics-server)
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# Enable PDB for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Service A specific configuration
+env:
+  SERVICE_NAME: "service-a"
+  VERSION: "v1.0.0"
+  ENVIRONMENT: "eks"
+
+configMap:
+  enabled: true
+  data:
+    APP_NAME: "service-a"
+    APP_ENV: "eks"
+    LOG_LEVEL: "info"
+    MESSAGE: "Welcome to Service A on EKS!"
+    CLUSTER_TYPE: "eks"
+
+secret:
+  enabled: true
+  data:
+    DB_PASSWORD: "service-a-eks-password"
+    API_KEY: "service-a-eks-key"
+
+# EKS optimized resources
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi

@@ -1,0 +1,41 @@
+# Service B Configuration
+nameOverride: "service-b"
+replicaCount: 1
+
+# Service B specific message
+args:
+  - "-text=Hello from Service B!"
+  - "-listen=:8080"
+
+# Different resource allocation for Service B
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 150m
+    memory: 256Mi
+
+# Service B specific configuration
+env:
+  SERVICE_NAME: "service-b"
+  VERSION: "v2.0.0"
+
+configMap:
+  enabled: true
+  data:
+    APP_NAME: "service-b"
+    APP_ENV: "production"
+    LOG_LEVEL: "debug"
+    MESSAGE: "Welcome to Service B!"
+
+secret:
+  enabled: true
+  data:
+    DB_PASSWORD: "service-b-password"
+    API_KEY: "service-b-key"
+
+# Enable PDB for Service B with different setting
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1

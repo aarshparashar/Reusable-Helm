@@ -1,0 +1,39 @@
+# Service A Configuration
+nameOverride: "service-a"
+replicaCount: 2
+
+# Service A specific message
+args:
+  - "-text=Hello from Service A!"
+  - "-listen=:8080"
+
+# Enable autoscaling for Service A
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Enable PDB for Service A
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Service A specific configuration
+env:
+  SERVICE_NAME: "service-a"
+  VERSION: "v1.0.0"
+
+configMap:
+  enabled: true
+  data:
+    APP_NAME: "service-a"
+    APP_ENV: "production"
+    LOG_LEVEL: "info"
+    MESSAGE: "Welcome to Service A!"
+
+secret:
+  enabled: true
+  data:
+    DB_PASSWORD: "service-a-password"
+    API_KEY: "service-a-key"

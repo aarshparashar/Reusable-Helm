@@ -1,0 +1,95 @@
+🎉 {{ include "microservice-chart.fullname" . }} has been deployed successfully!
+
+📊 Deployment Information:
+   Chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+   Release: {{ .Release.Name }}
+   Namespace: {{ .Release.Namespace }}
+   Service Account: {{ include "microservice-chart.serviceAccountName" . }}
+
+🌐 Service Access:
+   Service Name: {{ include "microservice-chart.fullname" . }}
+   Service Type: {{ .Values.service.type }}
+   Port: {{ .Values.service.port }}
+   {{- if eq .Values.service.type "NodePort" }}
+   {{- if .Values.service.nodePort }}
+   NodePort: {{ .Values.service.nodePort }}
+   {{- end }}
+   {{- end }}
+
+🔍 Health Checks:
+   {{- if .Values.probes.liveness.enabled }}
+   Liveness Probe: {{ .Values.probes.liveness.type }} - {{ .Values.probes.liveness.httpGet.path | default "N/A" }}
+   {{- end }}
+   {{- if .Values.probes.readiness.enabled }}
+   Readiness Probe: {{ .Values.probes.readiness.type }} - {{ .Values.probes.readiness.httpGet.path | default "N/A" }}
+   {{- end }}
+
+📈 Scaling:
+   {{- if .Values.autoscaling.enabled }}
+   HPA Enabled: {{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas
+   CPU Target: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}%
+   {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+   Memory Target: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}%
+   {{- end }}
+   {{- else }}
+   Fixed Replicas: {{ .Values.replicaCount }}
+   {{- end }}
+
+🛡️  Disruption Protection:
+   {{- if .Values.podDisruptionBudget.enabled }}
+   PDB Enabled: 
+   {{- if .Values.podDisruptionBudget.minAvailable }}
+   Min Available: {{ .Values.podDisruptionBudget.minAvailable }}
+   {{- end }}
+   {{- if .Values.podDisruptionBudget.maxUnavailable }}
+   Max Unavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+   {{- end }}
+   {{- else }}
+   PDB: Disabled
+   {{- end }}
+
+🔧 Configuration:
+   {{- if .Values.configMap.enabled }}
+   ConfigMap: {{ include "microservice-chart.fullname" . }}
+   {{- end }}
+   {{- if .Values.secret.enabled }}
+   Secret: {{ include "microservice-chart.fullname" . }}
+   {{- end }}
+
+📝 Next Steps:
+
+1. Check deployment status:
+   kubectl get deployment {{ include "microservice-chart.fullname" . }} -n {{ .Release.Namespace }}
+
+2. View pods:
+   kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }} -n {{ .Release.Namespace }}
+
+3. Check service:
+   kubectl get service {{ include "microservice-chart.fullname" . }} -n {{ .Release.Namespace }}
+
+4. Test the service:
+   {{- if eq .Values.service.type "ClusterIP" }}
+   kubectl port-forward service/{{ include "microservice-chart.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+   Then visit: http://localhost:{{ .Values.service.port }}
+   {{- else if eq .Values.service.type "NodePort" }}
+   minikube service {{ include "microservice-chart.fullname" . }} -n {{ .Release.Namespace }}
+   {{- else if eq .Values.service.type "LoadBalancer" }}
+   kubectl get service {{ include "microservice-chart.fullname" . }} -n {{ .Release.Namespace }}
+   Wait for EXTERNAL-IP and then visit: http://<EXTERNAL-IP>:{{ .Values.service.port }}
+   {{- end }}
+
+5. View logs:
+   kubectl logs -l app.kubernetes.io/instance={{ .Release.Name }} -n {{ .Release.Namespace }}
+
+6. Monitor rollout status:
+   kubectl rollout status deployment/{{ include "microservice-chart.fullname" . }} -n {{ .Release.Namespace }}
+
+🔄 To update configuration and trigger rolling restart:
+   helm upgrade {{ .Release.Name }} ./chart -n {{ .Release.Namespace }} -f values/values-{{ .Values.nameOverride | default "service" }}.yaml
+
+📚 Helpful Commands:
+   helm history {{ .Release.Name }} -n {{ .Release.Namespace }}
+   helm rollback {{ .Release.Name }} <REVISION> -n {{ .Release.Namespace }}
+   helm uninstall {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+For more information, visit: https://helm.sh/docs/

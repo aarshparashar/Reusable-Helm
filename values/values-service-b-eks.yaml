@@ -1,0 +1,59 @@
+# Service B Configuration for EKS
+nameOverride: "service-b"
+replicaCount: 2
+
+# Service B specific message
+args:
+  - "-text=Hello from Service B on EKS!"
+  - "-listen=:8080"
+
+# EKS LoadBalancer service for external access
+service:
+  type: LoadBalancer
+  port: 8080
+  targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+
+# Enable autoscaling for EKS
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 60
+
+# Enable PDB for Service B
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+# Service B specific configuration
+env:
+  SERVICE_NAME: "service-b"
+  VERSION: "v2.0.0"
+  ENVIRONMENT: "eks"
+
+configMap:
+  enabled: true
+  data:
+    APP_NAME: "service-b"
+    APP_ENV: "eks"
+    LOG_LEVEL: "debug"
+    MESSAGE: "Welcome to Service B on EKS!"
+    CLUSTER_TYPE: "eks"
+
+secret:
+  enabled: true
+  data:
+    DB_PASSWORD: "service-b-eks-password"
+    API_KEY: "service-b-eks-key"
+
+# Different resource allocation for Service B
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi

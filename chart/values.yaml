@@ -1,0 +1,118 @@
+# Default values for microservice-chart
+# This chart demonstrates deployment of microservices with ConfigMap rolling updates
+
+# Basic deployment configuration
+replicaCount: 1
+nameOverride: ""
+
+# Image configuration  
+image:
+  repository: hashicorp/http-echo
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Container arguments (for http-echo)
+args:
+  - "-text=Hello World!"
+  - "-listen=:8080"
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Health probes
+probes:
+  liveness:
+    enabled: true
+    type: http
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readiness:
+    enabled: true
+    type: http
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  startup:
+    enabled: false
+    type: http
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    failureThreshold: 30
+
+# Resource configuration
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Service Account
+serviceAccount:
+  create: true
+  name: ""
+
+# ConfigMap - changes here trigger automatic rolling updates
+configMap:
+  enabled: true
+  data:
+    APP_NAME: "microservice"
+    APP_ENV: "production"
+    LOG_LEVEL: "info"
+    MESSAGE: "Hello from ConfigMap!"
+
+# Secret configuration
+secret:
+  enabled: true
+  type: Opaque
+  data:
+    DB_PASSWORD: "supersecret"
+    API_KEY: "my-secret-key"
+
+# Environment variables
+env:
+  SERVICE_NAME: "microservice"
+  VERSION: "1.0.0"
+
+# Deployment strategy
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 25%
+    maxSurge: 25%
+
+# Security contexts
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
